@@ -1,16 +1,21 @@
-Worksheet:
-Worksheets (Interaction with an interpreter)
+*worksheet.txt*     Worksheets (Log of interaction with an interpreter)
+
+This plugin provides "worksheets". These are supposed to be somewhat 
+similar to workbooks in mathematics or maple. Basically, they provide 
+input fields and related output fields, plus some convenience functions 
+to move around and deal with the data in the fields.
+
+Currently supported types of worksheet/interpreters:
+    - vim (surprise! :)
+    - ruby (requires |+ruby|)
+    - rubymath (ruby with mathn loaded and Math included)
+    - sh (shell)
+    - r_com (R, windows only, requires rdcom and |+ruby|)
 
 
-Status:
-Experimental
+-----------------------------------------------------------------------
 
-
-What is missing:
-- copy/paste/delete items
-- Sometimes worksheets get messed up
-
-
-Install:
-See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
+Extracted from http://github.com/tomtom/vimtlib
+Status:  Minor problems
+Install: See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
 
