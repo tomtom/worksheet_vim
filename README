@@ -1,7 +1,7 @@
 *worksheet.txt*     Worksheets (Log of interaction with an interpreter)
 
 This plugin provides "worksheets". These are supposed to be somewhat 
-similar to workbooks in mathematics or maple. Basically, they provide 
+similar to workbooks in mathematica or maple. Basically, they provide 
 input fields and related output fields, plus some convenience functions 
 to move around and deal with the data in the fields.
 
