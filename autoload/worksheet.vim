@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-02-22.
-" @Revision:    0.0.713
+" @Last Change: 2010-04-24.
+" @Revision:    0.0.782
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -195,6 +195,42 @@ function! worksheet#Export(filename) "{{{3
         endtry
     else
         echoerr 'Worksheet: Not a worksheet'
+    endif
+endf
+
+
+function! worksheet#Operator(type) "{{{3
+    if a:type == 'line'
+        silent exe "normal! '[V']"
+    elseif a:type == 'block'
+        silent exe "normal! `[\<C-V>`]"
+    else
+        silent exe "normal! `[v`]"
+    endif
+    let beg = line("'[")
+    let end = line("']")
+    let lines = getline(beg, end)
+    call worksheet#EvaluateLinesInWorksheet(&filetype, lines)
+endf
+
+
+function! worksheet#EvaluateLinesInWorksheet(filetype, lines) "{{{3
+    " TLogVAR a:filetype, a:lines
+    let ws = worksheet#Complete(a:filetype, 'Worksheet '. a:filetype, len(a:filetype))
+    if !empty(ws)
+        call worksheet#UseWorksheet(a:filetype)
+        let self = b:worksheet
+        let cid = self.CurrentEntryId()
+        " TLogVAR cid, self.entries[cid]
+        if !empty(get(self.entries[cid], 'string', ''))
+            let cid = self.NewEntry(1, 1)
+        endif
+        if cid >= 0
+            if self.SetInput(cid, a:lines)
+                call self.Submit()
+                norm! zt
+            endif
+        endif
     endif
 endf
 
@@ -398,7 +434,14 @@ endf
 
 
 function! s:prototype.NewEntry(direction, ...) dict "{{{3
-    " let last_entry = a:0 >= 1 ? a:1 : 0
+    let last_entry = a:0 >= 1 ? a:1 : 0
+    if last_entry
+        if a:direction > 0
+            norm! G
+        else
+            norm! gg
+        endif
+    endif
 
     let cid = self.CurrentEntryId()
     " TLogVAR cid
@@ -429,10 +472,12 @@ function! s:prototype.NewEntry(direction, ...) dict "{{{3
         let lno = line('$')
     endif
 
+    let modifiable = &modifiable
+    setlocal modifiable
     call append(lno, head)
-
     exec lno + 1
     norm! o
+
     return entry_top
 endf
 
@@ -496,6 +541,29 @@ endf
 
 function! s:prototype.Keyword() dict "{{{3
     norm! K
+endf
+
+
+function! s:prototype.SetInput(eid, lines) dict "{{{3
+    " TLogVAR a:eid, a:lines
+    let eid = a:eid > 0 ? a:eid : self.CurrentEntryId()
+    let ebeg = self.HeadOfEntry()
+    let ibeg = ebeg + 1
+    let iend = self.EndOfInput()
+    " TLogVAR ibeg, iend
+    let modifiable = &modifiable
+    setlocal modifiable
+    try
+        if iend > ibeg
+            exec ibeg .','. iend .'delete'
+        endif
+        call setline(ibeg, a:lines)
+    finally
+        if !modifiable
+            setlocal nomodifiable
+        endif
+    endtry
+    return 1
 endf
 
 
@@ -601,7 +669,7 @@ function! s:prototype.Submit() dict "{{{3
             " TLogVAR silent, input
             call filter(input, 'v:val[0] != "%"')
             call map(input, 'self.PrepareInput(v:val)')
-            " TLogVAR input
+            " TLogVAR silent, input
             let out_beg = in_end + 1
             if out_beg <= line('$')
                 let out_end = self.EndOfOutput()
@@ -614,6 +682,7 @@ function! s:prototype.Submit() dict "{{{3
                 endif
             endif
             let output = self.Evaluate(input)
+            " TLogVAR output
             if type(output) <= 1
                 let body  = output
                 let lines = split(output, "\n")

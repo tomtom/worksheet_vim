@@ -3,9 +3,10 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-02-22.
-" @Revision:    68
+" @Last Change: 2010-04-24.
+" @Revision:    99
 " GetLatestVimScripts: 0 0 worksheet.vim
+" @TPluginBefore \<autoload/worksheet.\{-}\.vim plugin/worksheet.vim
 
 if &cp || exists("loaded_worksheet")
     finish
@@ -44,6 +45,16 @@ if !exists('g:worksheet_rewrite')
                 \ ['^\s\+?\([^?].*\)', 'help("\1")', ''],
                 \ ]
                 \ }
+endif
+
+" @TPluginInclude
+if !exists('g:worksheet_map')
+    let g:worksheet_map = '<Leader>x'   "{{{2
+endif
+if !empty(g:worksheet_map)
+    exec 'nnoremap '. g:worksheet_map .'x :<c-u>call worksheet#EvaluateLinesInWorksheet(&filetype, getline(line("."), line(".") + v:count))<cr>'
+    exec 'xnoremap '. g:worksheet_map .'x :call worksheet#EvaluateLinesInWorksheet(&filetype, getline(line("''<"), line("''>")))<cr>'
+    exec 'nnoremap '. g:worksheet_map .' :set opfunc=worksheet#Operator<cr>g@'
 endif
 
 
