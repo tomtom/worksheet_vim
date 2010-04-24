@@ -3,16 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-02-20.
-" @Revision:    0.0.54
-
-if &cp || exists("loaded_worksheet_vim_autoload")
-    finish
-endif
-let loaded_worksheet_vim_autoload = 1
-let s:save_cpo = &cpo
-set cpo&vim
-
+" @Last Change: 2010-04-23.
+" @Revision:    0.0.97
 
 let s:prototype = {'syntax': 'vim'}
 
@@ -20,13 +12,16 @@ let s:prototype = {'syntax': 'vim'}
 " If the first character is "|", the input string will be processed with 
 " |:execute|. Otherwise |eval()| will be used.
 function! s:prototype.Evaluate(lines) dict "{{{3
-    let vim = join(a:lines, "\n")
-    if vim[0] == '|'
-        exec vim[1 : -1]
-        return ''
-    else
-        return string(eval(vim))
-    endif
+    let lines = copy(a:lines)
+    call filter(lines, 'v:val !~ ''^\s*"''')
+    " call map(lines, 'substitute(v:val, ''^\([^"]*\|\\.\|"\(\\.\|[^"\]*\)"\)\+\zs".*$'', "", "")')
+    call map(lines, '":". v:val')
+    let vim = join(lines, "\n") ."\n"
+    " TLogVAR vim
+    redir => out
+    exec 'silent normal' vim
+    redir END
+    return out
 endf
 
 
@@ -40,6 +35,3 @@ function! worksheet#vim#InitializeBuffer(worksheet) "{{{3
     runtime ftplugin/vim.vim
 endf
 
-
-let &cpo = s:save_cpo
-unlet s:save_cpo
