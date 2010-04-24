@@ -21,6 +21,7 @@ augroup Worksheet
 augroup END
 
 
+" Open a new worksheet.
 function! worksheet#Worksheet(...) "{{{3
     let mode = a:0 >= 1 ? a:1 : g:worksheet_default
     let current_buffer = a:0 >= 2 ? a:2 : 0
@@ -70,6 +71,23 @@ function! worksheet#Worksheet(...) "{{{3
         endif
     endif
     exec 'autocmd Worksheet BufUnload <buffer> call s:bufworksheets['. b:worksheet.bufnr .'].BufUnload()'
+endf
+
+
+" Open a new worksheet or use the current one.
+function! worksheet#UseWorksheet(...) "{{{3
+    let mode = a:0 >= 1 ? a:1 : g:worksheet_default
+    if has_key(s:modes, mode) && !empty(s:modes[mode])
+        let winnrs = filter(copy(s:modes[mode]), 'bufwinnr(v:val) != -1')
+        " TLogVAR winnrs
+        if !empty(winnrs)
+            exec bufwinnr(winnrs[0]) .'wincmd w'
+        else
+            exec 'sbuffer '. s:modes[mode][0]
+        endif
+    else
+        return call('worksheet#Worksheet', a:000)
+    endif
 endf
 
 

@@ -49,7 +49,7 @@ endif
 
 " :display: :Worksheet [TYPE]
 " Open a new worksheet.
-command! -narg=* -complete=customlist,worksheet#Complete Worksheet call worksheet#Worksheet(<f-args>)
+command! -narg=* -complete=customlist,worksheet#Complete Worksheet call worksheet#UseWorksheet(<f-args>)
 
 " Restore a worksheet to the last know good state.
 command! WorksheetRestore call worksheet#Restore()
