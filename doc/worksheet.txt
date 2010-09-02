@@ -89,11 +89,9 @@ Contents~
         prototype.SwapEntries
         prototype.SilentInput
         prototype.Submit
-        worksheet#rubymath#InitializeInterpreter ... |worksheet#rubymath#InitializeInterpreter()|
-        worksheet#rubymath#InitializeBuffer ........ |worksheet#rubymath#InitializeBuffer()|
         prototype.Evaluate
-        worksheet#ruby#InitializeInterpreter ....... |worksheet#ruby#InitializeInterpreter()|
-        worksheet#ruby#InitializeBuffer ............ |worksheet#ruby#InitializeBuffer()|
+        worksheet#python#InitializeInterpreter ..... |worksheet#python#InitializeInterpreter()|
+        worksheet#python#InitializeBuffer .......... |worksheet#python#InitializeBuffer()|
         g:worksheet#rcom#reuse ..................... |g:worksheet#rcom#reuse|
         prototype.Evaluate
         prototype.Keyword
@@ -101,17 +99,19 @@ Contents~
         worksheet#rcom#InitializeInterpreter ....... |worksheet#rcom#InitializeInterpreter()|
         worksheet#rcom#InitializeBuffer ............ |worksheet#rcom#InitializeBuffer()|
         prototype.Evaluate
-        worksheet#vim#InitializeInterpreter ........ |worksheet#vim#InitializeInterpreter()|
-        worksheet#vim#InitializeBuffer ............. |worksheet#vim#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#python#InitializeInterpreter ..... |worksheet#python#InitializeInterpreter()|
-        worksheet#python#InitializeBuffer .......... |worksheet#python#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#vimeval#InitializeInterpreter .... |worksheet#vimeval#InitializeInterpreter()|
-        worksheet#vimeval#InitializeBuffer ......... |worksheet#vimeval#InitializeBuffer()|
+        worksheet#ruby#InitializeInterpreter ....... |worksheet#ruby#InitializeInterpreter()|
+        worksheet#ruby#InitializeBuffer ............ |worksheet#ruby#InitializeBuffer()|
+        worksheet#rubymath#InitializeInterpreter ... |worksheet#rubymath#InitializeInterpreter()|
+        worksheet#rubymath#InitializeBuffer ........ |worksheet#rubymath#InitializeBuffer()|
         prototype.Evaluate
         worksheet#sh#InitializeInterpreter ......... |worksheet#sh#InitializeInterpreter()|
         worksheet#sh#InitializeBuffer .............. |worksheet#sh#InitializeBuffer()|
+        prototype.Evaluate
+        worksheet#vim#InitializeInterpreter ........ |worksheet#vim#InitializeInterpreter()|
+        worksheet#vim#InitializeBuffer ............. |worksheet#vim#InitializeBuffer()|
+        prototype.Evaluate
+        worksheet#vimeval#InitializeInterpreter .... |worksheet#vimeval#InitializeInterpreter()|
+        worksheet#vimeval#InitializeBuffer ......... |worksheet#vimeval#InitializeBuffer()|
 
 
 ========================================================================
@@ -334,26 +334,16 @@ prototype.Submit
 
 
 ========================================================================
-autoload/worksheet/rubymath.vim~
-
-                                                    *worksheet#rubymath#InitializeInterpreter()*
-worksheet#rubymath#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#rubymath#InitializeBuffer()*
-worksheet#rubymath#InitializeBuffer(worksheet)
-
-
-========================================================================
-autoload/worksheet/ruby.vim~
+autoload/worksheet/python.vim~
 
 
 prototype.Evaluate
 
-                                                    *worksheet#ruby#InitializeInterpreter()*
-worksheet#ruby#InitializeInterpreter(worksheet)
+                                                    *worksheet#python#InitializeInterpreter()*
+worksheet#python#InitializeInterpreter(worksheet)
 
-                                                    *worksheet#ruby#InitializeBuffer()*
-worksheet#ruby#InitializeBuffer(worksheet)
+                                                    *worksheet#python#InitializeBuffer()*
+worksheet#python#InitializeBuffer(worksheet)
 
 
 ========================================================================
@@ -382,6 +372,42 @@ worksheet#rcom#InitializeBuffer(worksheet)
 
 
 ========================================================================
+autoload/worksheet/ruby.vim~
+
+
+prototype.Evaluate
+
+                                                    *worksheet#ruby#InitializeInterpreter()*
+worksheet#ruby#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#ruby#InitializeBuffer()*
+worksheet#ruby#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/rubymath.vim~
+
+                                                    *worksheet#rubymath#InitializeInterpreter()*
+worksheet#rubymath#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#rubymath#InitializeBuffer()*
+worksheet#rubymath#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/sh.vim~
+
+
+prototype.Evaluate
+
+                                                    *worksheet#sh#InitializeInterpreter()*
+worksheet#sh#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#sh#InitializeBuffer()*
+worksheet#sh#InitializeBuffer(worksheet)
+
+
+========================================================================
 autoload/worksheet/vim.vim~
 
 
@@ -397,19 +423,6 @@ worksheet#vim#InitializeBuffer(worksheet)
 
 
 ========================================================================
-autoload/worksheet/python.vim~
-
-
-prototype.Evaluate
-
-                                                    *worksheet#python#InitializeInterpreter()*
-worksheet#python#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#python#InitializeBuffer()*
-worksheet#python#InitializeBuffer(worksheet)
-
-
-========================================================================
 autoload/worksheet/vimeval.vim~
 
 
@@ -422,19 +435,6 @@ worksheet#vimeval#InitializeInterpreter(worksheet)
 
                                                     *worksheet#vimeval#InitializeBuffer()*
 worksheet#vimeval#InitializeBuffer(worksheet)
-
-
-========================================================================
-autoload/worksheet/sh.vim~
-
-
-prototype.Evaluate
-
-                                                    *worksheet#sh#InitializeInterpreter()*
-worksheet#sh#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#sh#InitializeBuffer()*
-worksheet#sh#InitializeBuffer(worksheet)
 
 
 

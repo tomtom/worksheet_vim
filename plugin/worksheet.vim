@@ -3,10 +3,10 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-04-24.
-" @Revision:    99
+" @Last Change: 2010-05-16.
+" @Revision:    100
 " GetLatestVimScripts: 0 0 worksheet.vim
-" @TPluginBefore \<autoload/worksheet.\{-}\.vim plugin/worksheet.vim
+" @TPluginBefore \<autoload/worksheet\> plugin/worksheet.vim
 
 if &cp || exists("loaded_worksheet")
     finish
