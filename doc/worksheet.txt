@@ -31,7 +31,6 @@ This script requires hookcursormoved (vimscript #2037) to be installed.
 ========================================================================
 Contents~
 
-        g:worksheet_default ........................ |g:worksheet_default|
         g:worksheet_suffix ......................... |g:worksheet_suffix|
         g:worksheet_map ............................ |g:worksheet_map|
         :Worksheet ................................. |:Worksheet|
@@ -57,6 +56,7 @@ Contents~
         yc ......................................... |worksheet-map-yc|
         yo ......................................... |worksheet-map-yo|
         yin ........................................ |worksheet-map-yin|
+        g:worksheet#default ........................ |g:worksheet#default|
         worksheet#Worksheet ........................ |worksheet#Worksheet()|
         worksheet#UseWorksheet ..................... |worksheet#UseWorksheet()|
         worksheet#Complete ......................... |worksheet#Complete()|
@@ -89,9 +89,11 @@ Contents~
         prototype.SwapEntries
         prototype.SilentInput
         prototype.Submit
+        worksheet#rubymath#InitializeInterpreter ... |worksheet#rubymath#InitializeInterpreter()|
+        worksheet#rubymath#InitializeBuffer ........ |worksheet#rubymath#InitializeBuffer()|
         prototype.Evaluate
-        worksheet#python#InitializeInterpreter ..... |worksheet#python#InitializeInterpreter()|
-        worksheet#python#InitializeBuffer .......... |worksheet#python#InitializeBuffer()|
+        worksheet#ruby#InitializeInterpreter ....... |worksheet#ruby#InitializeInterpreter()|
+        worksheet#ruby#InitializeBuffer ............ |worksheet#ruby#InitializeBuffer()|
         g:worksheet#rcom#reuse ..................... |g:worksheet#rcom#reuse|
         prototype.Evaluate
         prototype.Keyword
@@ -99,27 +101,21 @@ Contents~
         worksheet#rcom#InitializeInterpreter ....... |worksheet#rcom#InitializeInterpreter()|
         worksheet#rcom#InitializeBuffer ............ |worksheet#rcom#InitializeBuffer()|
         prototype.Evaluate
-        worksheet#ruby#InitializeInterpreter ....... |worksheet#ruby#InitializeInterpreter()|
-        worksheet#ruby#InitializeBuffer ............ |worksheet#ruby#InitializeBuffer()|
-        worksheet#rubymath#InitializeInterpreter ... |worksheet#rubymath#InitializeInterpreter()|
-        worksheet#rubymath#InitializeBuffer ........ |worksheet#rubymath#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#sh#InitializeInterpreter ......... |worksheet#sh#InitializeInterpreter()|
-        worksheet#sh#InitializeBuffer .............. |worksheet#sh#InitializeBuffer()|
-        prototype.Evaluate
         worksheet#vim#InitializeInterpreter ........ |worksheet#vim#InitializeInterpreter()|
         worksheet#vim#InitializeBuffer ............. |worksheet#vim#InitializeBuffer()|
         prototype.Evaluate
+        worksheet#python#InitializeInterpreter ..... |worksheet#python#InitializeInterpreter()|
+        worksheet#python#InitializeBuffer .......... |worksheet#python#InitializeBuffer()|
+        prototype.Evaluate
         worksheet#vimeval#InitializeInterpreter .... |worksheet#vimeval#InitializeInterpreter()|
         worksheet#vimeval#InitializeBuffer ......... |worksheet#vimeval#InitializeBuffer()|
+        prototype.Evaluate
+        worksheet#sh#InitializeInterpreter ......... |worksheet#sh#InitializeInterpreter()|
+        worksheet#sh#InitializeBuffer .............. |worksheet#sh#InitializeBuffer()|
 
 
 ========================================================================
 plugin/worksheet.vim~
-
-                                                    *g:worksheet_default*
-g:worksheet_default            (default: 'vim')
-    The default worksheet type
 
                                                     *g:worksheet_suffix*
 g:worksheet_suffix             (default: '.wks')
@@ -231,6 +227,10 @@ yin ... :call b:worksheet.YankAll()<cr>
 ========================================================================
 autoload/worksheet.vim~
 
+                                                    *g:worksheet#default*
+g:worksheet#default            (default: 'vim')
+    The default worksheet type
+
                                                     *worksheet#Worksheet()*
 worksheet#Worksheet(...)
     Open a new worksheet.
@@ -334,16 +334,26 @@ prototype.Submit
 
 
 ========================================================================
-autoload/worksheet/python.vim~
+autoload/worksheet/rubymath.vim~
+
+                                                    *worksheet#rubymath#InitializeInterpreter()*
+worksheet#rubymath#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#rubymath#InitializeBuffer()*
+worksheet#rubymath#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/ruby.vim~
 
 
 prototype.Evaluate
 
-                                                    *worksheet#python#InitializeInterpreter()*
-worksheet#python#InitializeInterpreter(worksheet)
+                                                    *worksheet#ruby#InitializeInterpreter()*
+worksheet#ruby#InitializeInterpreter(worksheet)
 
-                                                    *worksheet#python#InitializeBuffer()*
-worksheet#python#InitializeBuffer(worksheet)
+                                                    *worksheet#ruby#InitializeBuffer()*
+worksheet#ruby#InitializeBuffer(worksheet)
 
 
 ========================================================================
@@ -372,42 +382,6 @@ worksheet#rcom#InitializeBuffer(worksheet)
 
 
 ========================================================================
-autoload/worksheet/ruby.vim~
-
-
-prototype.Evaluate
-
-                                                    *worksheet#ruby#InitializeInterpreter()*
-worksheet#ruby#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#ruby#InitializeBuffer()*
-worksheet#ruby#InitializeBuffer(worksheet)
-
-
-========================================================================
-autoload/worksheet/rubymath.vim~
-
-                                                    *worksheet#rubymath#InitializeInterpreter()*
-worksheet#rubymath#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#rubymath#InitializeBuffer()*
-worksheet#rubymath#InitializeBuffer(worksheet)
-
-
-========================================================================
-autoload/worksheet/sh.vim~
-
-
-prototype.Evaluate
-
-                                                    *worksheet#sh#InitializeInterpreter()*
-worksheet#sh#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#sh#InitializeBuffer()*
-worksheet#sh#InitializeBuffer(worksheet)
-
-
-========================================================================
 autoload/worksheet/vim.vim~
 
 
@@ -423,6 +397,19 @@ worksheet#vim#InitializeBuffer(worksheet)
 
 
 ========================================================================
+autoload/worksheet/python.vim~
+
+
+prototype.Evaluate
+
+                                                    *worksheet#python#InitializeInterpreter()*
+worksheet#python#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#python#InitializeBuffer()*
+worksheet#python#InitializeBuffer(worksheet)
+
+
+========================================================================
 autoload/worksheet/vimeval.vim~
 
 
@@ -435,6 +422,19 @@ worksheet#vimeval#InitializeInterpreter(worksheet)
 
                                                     *worksheet#vimeval#InitializeBuffer()*
 worksheet#vimeval#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/sh.vim~
+
+
+prototype.Evaluate
+
+                                                    *worksheet#sh#InitializeInterpreter()*
+worksheet#sh#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#sh#InitializeBuffer()*
+worksheet#sh#InitializeBuffer(worksheet)
 
 
 
