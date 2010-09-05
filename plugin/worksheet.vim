@@ -3,10 +3,9 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-05-16.
-" @Revision:    100
+" @Last Change: 2010-09-05.
+" @Revision:    106
 " GetLatestVimScripts: 0 0 worksheet.vim
-" @TPluginBefore \<autoload/worksheet\> plugin/worksheet.vim
 
 if &cp || exists("loaded_worksheet")
     finish
@@ -21,11 +20,6 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
-if !exists('g:worksheet_default')
-    " The default worksheet type
-    let g:worksheet_default = 'vim'   "{{{2
-endif
-
 if !exists('g:worksheet_suffix')
     " The suffix for saved worksheets.
     " TODO: If non-empty, this will also add a line to the filetypedetect 
@@ -37,15 +31,6 @@ if !empty(g:worksheet_suffix) && exists('tml_vimfiles')
     exec 'au filetypedetect BufNewFile,BufRead *'. g:worksheet_suffix .' call worksheet#RestoreBuffer()'
 endif
 
-if !exists('g:worksheet_rewrite')
-    " let g:worksheet_rewrite = {}   "{{{2
-    let g:worksheet_rewrite = {
-                \ '^r\(_com\)\?$': [
-                \ ['^\s\+??\(.*\)', 'help.search("\1")', ''],
-                \ ['^\s\+?\([^?].*\)', 'help("\1")', ''],
-                \ ]
-                \ }
-endif
 
 " @TPluginInclude
 if !exists('g:worksheet_map')

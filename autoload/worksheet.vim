@@ -3,12 +3,29 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-04-24.
-" @Revision:    0.0.782
+" @Last Change: 2010-09-05.
+" @Revision:    0.0.784
 
 let s:save_cpo = &cpo
 set cpo&vim
 " call tlog#Log('Load: '. expand('<sfile>')) " vimtlib-sfile
+
+
+if !exists('g:worksheet#default')
+    " The default worksheet type
+    let g:worksheet#default = 'vim'   "{{{2
+endif
+
+
+if !exists('g:worksheet#rewrite')
+    " let g:worksheet#rewrite = {}   "{{{2
+    let g:worksheet#rewrite = {
+                \ '^r\(_com\)\?$': [
+                \ ['^\s\+??\(.*\)', 'help.search("\1")', ''],
+                \ ['^\s\+?\([^?].*\)', 'help("\1")', ''],
+                \ ]
+                \ }
+endif
 
 
 let s:modes = {}
@@ -23,7 +40,7 @@ augroup END
 
 " Open a new worksheet.
 function! worksheet#Worksheet(...) "{{{3
-    let mode = a:0 >= 1 ? a:1 : g:worksheet_default
+    let mode = a:0 >= 1 ? a:1 : g:worksheet#default
     let current_buffer = a:0 >= 2 ? a:2 : 0
     if !current_buffer
         exec 'split __Worksheet@'. mode .'__'
@@ -76,7 +93,7 @@ endf
 
 " Open a new worksheet or use the current one.
 function! worksheet#UseWorksheet(...) "{{{3
-    let mode = a:0 >= 1 ? a:1 : g:worksheet_default
+    let mode = a:0 >= 1 ? a:1 : g:worksheet#default
     if has_key(s:modes, mode) && !empty(s:modes[mode])
         let winnrs = filter(copy(s:modes[mode]), 'bufwinnr(v:val) != -1')
         " TLogVAR winnrs
@@ -531,7 +548,7 @@ function! s:prototype.PrepareInput(line) dict "{{{3
     " TLogVAR a:line, line
     let line = substitute(line, '\\\@<!\zs\\@', '@', 'g')
     " TLogVAR line
-    let rules = get(g:worksheet_rewrite, 'mode', [])
+    let rules = get(g:worksheet#rewrite, 'mode', [])
     for rule in rules
         let line = call('substitute', rule)
     endfor
