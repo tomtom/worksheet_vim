@@ -5,7 +5,7 @@
   "maintainer" : "Tom Link <micathom at gmail com>",
   "repository" : {"type": "git", "url": "git://github.com/tomtom/worksheet_vim.git"},
   "dependencies" : {
-    'hookcursormoved': {'type': 'git', 'url': 'git://github.com/tomtom/hookcursormoved_vim.git'}
+    "hookcursormoved": {"type": "git", "url": "git://github.com/tomtom/hookcursormoved_vim.git"}
   },
   "description" : "\"Mathematica-like\" worksheets (sort of) with support for R under Windows, ruby ..."
 }
