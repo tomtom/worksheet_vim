@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-09-05.
-" @Revision:    0.0.784
+" @Last Change: 2012-03-14.
+" @Revision:    0.0.794
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -318,6 +318,36 @@ endf
 
 function! s:RegexpEscape(string) "{{{3
     return '\V'. escape(a:string, '\')
+endf
+
+
+function! s:EncodeID(cid) "{{{3
+    let start = 65
+    let base = 26
+    let code = []
+    let cid = a:cid - 1
+    while 1
+        let rem = cid % base
+        call insert(code, nr2char(start + rem))
+        if cid < base
+            break
+        endif
+        let cid = (cid / base) - 1
+    endwh
+    return join(code, '')
+endf
+
+
+function! DecodeID(code) "{{{3
+    let id = 0
+    let max = len(a:code) - 1
+    for idx in range(0, max)
+        let a = char2nr(a:code[idx]) - 64
+        let b = float2nr(pow(26, max - idx))
+        let c = a * b
+        let id += c
+    endfor
+    return id
 endf
 
 
