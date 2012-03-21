@@ -3,17 +3,40 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-04-23.
-" @Revision:    0.0.62
+" @Last Change: 2012-03-21.
+" @Revision:    0.0.70
 
 let s:prototype = {'syntax': 'vimeval'}
 
 
-" If the first character is "|", the input string will be processed with 
-" |:execute|. Otherwise |eval()| will be used.
 function! s:prototype.Evaluate(lines) dict "{{{3
-    let vim = join(a:lines, "\n")
-    return string(eval(vim))
+    let lines = []
+    for line in a:lines
+        if !empty(lines) && line =~ '^\s*\\'
+            let lines[-1] .= substitute(line, '^\s*\\', '', '')
+        else
+            call add(lines, line)
+        endif
+    endfor
+    let rv = []
+    for line in lines
+        if line =~ '^\s*:'
+            exec 'normal!' (line ."\n")
+        elseif line =~ '^\s*\([bwgsl]:\)\?\w\+\s*='
+            exec 'normal!' (':let '. line ."\n")
+        elseif line =~ '^\s*\(s:\)\?\u\w*(.\{-})\s*='
+            let m = matchlist(line, '^\s*\(\(s:\)\?\u\w*(.\{-})\)\s*=\(.\+\)$')
+            if !empty(m)
+                exec 'silent normal!' (':function! '. m[1] ."\n"
+                            \ . m[3] ."\n"
+                            \ ."endf\n")
+            endif
+        else
+            let val = string(eval(line))
+            call add(rv, val)
+        endif
+    endfor
+    return join(rv, '\n')
 endf
 
 
