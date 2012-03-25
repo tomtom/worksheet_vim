@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2012-03-21.
-" @Revision:    0.0.70
+" @Last Change: 2012-03-25.
+" @Revision:    0.0.74
 
 let s:prototype = {'syntax': 'vimeval'}
 
@@ -21,22 +21,20 @@ function! s:prototype.Evaluate(lines) dict "{{{3
     let rv = []
     for line in lines
         if line =~ '^\s*:'
-            exec 'normal!' (line ."\n")
+            call worksheet#vim#Evaluate([line])
         elseif line =~ '^\s*\([bwgsl]:\)\?\w\+\s*='
-            exec 'normal!' (':let '. line ."\n")
+            call worksheet#vim#Evaluate([':let '. line])
         elseif line =~ '^\s*\(s:\)\?\u\w*(.\{-})\s*='
             let m = matchlist(line, '^\s*\(\(s:\)\?\u\w*(.\{-})\)\s*=\(.\+\)$')
             if !empty(m)
-                exec 'silent normal!' (':function! '. m[1] ."\n"
-                            \ . m[3] ."\n"
-                            \ ."endf\n")
+                call worksheet#vim#Evaluate(['function! '. m[1], m[3], 'endf'])
             endif
         else
             let val = string(eval(line))
             call add(rv, val)
         endif
     endfor
-    return join(rv, '\n')
+    return join(rv, "\n")
 endf
 
 

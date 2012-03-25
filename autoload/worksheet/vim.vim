@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-09-19.
-" @Revision:    0.0.99
+" @Last Change: 2012-03-25.
+" @Revision:    0.0.101
 
 let s:prototype = {'syntax': 'vim'}
 
@@ -12,16 +12,21 @@ let s:prototype = {'syntax': 'vim'}
 " If the first character is "|", the input string will be processed with 
 " |:execute|. Otherwise |eval()| will be used.
 function! s:prototype.Evaluate(lines) dict "{{{3
-    let lines = copy(a:lines)
-    call filter(lines, 'v:val !~ ''^\s*"''')
-    " call map(lines, 'substitute(v:val, ''^\([^"]*\|\\.\|"\(\\.\|[^"\]*\)"\)\+\zs".*$'', "", "")')
-    call map(lines, '":". v:val')
-    let vim = join(lines, "\n") ."\n"
-    " TLogVAR vim
-    redir => out
-    exec 'silent normal' vim
-    redir END
-    return out
+    return worksheet#vim#Evaluate(a:lines)
+endf
+
+
+function! worksheet#vim#Evaluate(lines) "{{{3
+    let t = @t
+    try
+        let @t = join(a:lines, "\n")
+        redir => out
+        @t
+        redir END
+        return out
+    finally
+        let @t = t
+    endtry
 endf
 
 
