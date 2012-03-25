@@ -68,6 +68,7 @@ Contents~
         worksheet#Operator ......................... |worksheet#Operator()|
         worksheet#EvaluateLinesInWorksheet ......... |worksheet#EvaluateLinesInWorksheet()|
         worksheet#EvaluateAll ...................... |worksheet#EvaluateAll()|
+        DecodeID ................................... |DecodeID()|
         worksheet#Prototype ........................ |worksheet#Prototype()|
         prototype.BufJoin
         prototype.BufUnload
@@ -92,26 +93,27 @@ Contents~
         worksheet#rubymath#InitializeInterpreter ... |worksheet#rubymath#InitializeInterpreter()|
         worksheet#rubymath#InitializeBuffer ........ |worksheet#rubymath#InitializeBuffer()|
         prototype.Evaluate
+        worksheet#vim#Evaluate ..................... |worksheet#vim#Evaluate()|
+        worksheet#vim#InitializeInterpreter ........ |worksheet#vim#InitializeInterpreter()|
+        worksheet#vim#InitializeBuffer ............. |worksheet#vim#InitializeBuffer()|
+        prototype.Evaluate
+        worksheet#vimeval#InitializeInterpreter .... |worksheet#vimeval#InitializeInterpreter()|
+        worksheet#vimeval#InitializeBuffer ......... |worksheet#vimeval#InitializeBuffer()|
+        prototype.Evaluate
         worksheet#ruby#InitializeInterpreter ....... |worksheet#ruby#InitializeInterpreter()|
         worksheet#ruby#InitializeBuffer ............ |worksheet#ruby#InitializeBuffer()|
+        prototype.Evaluate
+        worksheet#python#InitializeInterpreter ..... |worksheet#python#InitializeInterpreter()|
+        worksheet#python#InitializeBuffer .......... |worksheet#python#InitializeBuffer()|
+        prototype.Evaluate
+        worksheet#sh#InitializeInterpreter ......... |worksheet#sh#InitializeInterpreter()|
+        worksheet#sh#InitializeBuffer .............. |worksheet#sh#InitializeBuffer()|
         g:worksheet#rcom#reuse ..................... |g:worksheet#rcom#reuse|
         prototype.Evaluate
         prototype.Keyword
         prototype.Quit
         worksheet#rcom#InitializeInterpreter ....... |worksheet#rcom#InitializeInterpreter()|
         worksheet#rcom#InitializeBuffer ............ |worksheet#rcom#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#vim#InitializeInterpreter ........ |worksheet#vim#InitializeInterpreter()|
-        worksheet#vim#InitializeBuffer ............. |worksheet#vim#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#python#InitializeInterpreter ..... |worksheet#python#InitializeInterpreter()|
-        worksheet#python#InitializeBuffer .......... |worksheet#python#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#vimeval#InitializeInterpreter .... |worksheet#vimeval#InitializeInterpreter()|
-        worksheet#vimeval#InitializeBuffer ......... |worksheet#vimeval#InitializeBuffer()|
-        prototype.Evaluate
-        worksheet#sh#InitializeInterpreter ......... |worksheet#sh#InitializeInterpreter()|
-        worksheet#sh#InitializeBuffer .............. |worksheet#sh#InitializeBuffer()|
 
 
 ========================================================================
@@ -125,7 +127,6 @@ g:worksheet_suffix             (default: '.wks')
 
                                                     *g:worksheet_map*
 g:worksheet_map                (default: '<Leader>x')
-    @TPluginInclude
 
                                                     *:Worksheet*
 :Worksheet [TYPE]
@@ -266,66 +267,49 @@ worksheet#EvaluateLinesInWorksheet(filetype, lines)
                                                     *worksheet#EvaluateAll()*
 worksheet#EvaluateAll()
 
+                                                    *DecodeID()*
+DecodeID(code)
+
                                                     *worksheet#Prototype()*
 worksheet#Prototype()
 
-
 prototype.BufJoin
-
 
 prototype.BufUnload
 
-
 prototype.NextEntry
-
 
 prototype.OtherEntry
 
-
 prototype.GotoEntry
-
 
 prototype.NextInputField
 
-
 prototype.CurrentEntryId
-
 
 prototype.Header
 
-
 prototype.NewEntry
-
 
 prototype.HeadOfEntry
 
-
 prototype.EndOfInput
-
 
 prototype.EndOfOutput
 
-
 prototype.PrepareInput
-
 
 prototype.Keyword
 
-
 prototype.SetInput
-
 
 prototype.Yank
 
-
 prototype.YankAll
-
 
 prototype.SwapEntries
 
-
 prototype.SilentInput
-
 
 prototype.Submit
     Special syntax:
@@ -344,8 +328,36 @@ worksheet#rubymath#InitializeBuffer(worksheet)
 
 
 ========================================================================
-autoload/worksheet/ruby.vim~
+autoload/worksheet/vim.vim~
 
+prototype.Evaluate
+    If the first character is "|", the input string will be processed with 
+    |:execute|. Otherwise |eval()| will be used.
+
+                                                    *worksheet#vim#Evaluate()*
+worksheet#vim#Evaluate(lines)
+
+                                                    *worksheet#vim#InitializeInterpreter()*
+worksheet#vim#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#vim#InitializeBuffer()*
+worksheet#vim#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/vimeval.vim~
+
+prototype.Evaluate
+
+                                                    *worksheet#vimeval#InitializeInterpreter()*
+worksheet#vimeval#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#vimeval#InitializeBuffer()*
+worksheet#vimeval#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/ruby.vim~
 
 prototype.Evaluate
 
@@ -357,48 +369,7 @@ worksheet#ruby#InitializeBuffer(worksheet)
 
 
 ========================================================================
-autoload/worksheet/rcom.vim~
-
-                                                    *g:worksheet#rcom#reuse*
-g:worksheet#rcom#reuse         (default: 0)
-    If non-null, reuse an already running instance or R GUI.
-      0 ... Don't reuse a running instance of R
-      1 ... Reuse a running R instance
-
-
-prototype.Evaluate
-
-
-prototype.Keyword
-
-
-prototype.Quit
-
-                                                    *worksheet#rcom#InitializeInterpreter()*
-worksheet#rcom#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#rcom#InitializeBuffer()*
-worksheet#rcom#InitializeBuffer(worksheet)
-
-
-========================================================================
-autoload/worksheet/vim.vim~
-
-
-prototype.Evaluate
-    If the first character is "|", the input string will be processed with 
-    |:execute|. Otherwise |eval()| will be used.
-
-                                                    *worksheet#vim#InitializeInterpreter()*
-worksheet#vim#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#vim#InitializeBuffer()*
-worksheet#vim#InitializeBuffer(worksheet)
-
-
-========================================================================
 autoload/worksheet/python.vim~
-
 
 prototype.Evaluate
 
@@ -410,23 +381,7 @@ worksheet#python#InitializeBuffer(worksheet)
 
 
 ========================================================================
-autoload/worksheet/vimeval.vim~
-
-
-prototype.Evaluate
-    If the first character is "|", the input string will be processed with 
-    |:execute|. Otherwise |eval()| will be used.
-
-                                                    *worksheet#vimeval#InitializeInterpreter()*
-worksheet#vimeval#InitializeInterpreter(worksheet)
-
-                                                    *worksheet#vimeval#InitializeBuffer()*
-worksheet#vimeval#InitializeBuffer(worksheet)
-
-
-========================================================================
 autoload/worksheet/sh.vim~
-
 
 prototype.Evaluate
 
@@ -435,6 +390,28 @@ worksheet#sh#InitializeInterpreter(worksheet)
 
                                                     *worksheet#sh#InitializeBuffer()*
 worksheet#sh#InitializeBuffer(worksheet)
+
+
+========================================================================
+autoload/worksheet/rcom.vim~
+
+                                                    *g:worksheet#rcom#reuse*
+g:worksheet#rcom#reuse         (default: 0)
+    If non-null, reuse an already running instance or R GUI.
+      0 ... Don't reuse a running instance of R
+      1 ... Reuse a running R instance
+
+prototype.Evaluate
+
+prototype.Keyword
+
+prototype.Quit
+
+                                                    *worksheet#rcom#InitializeInterpreter()*
+worksheet#rcom#InitializeInterpreter(worksheet)
+
+                                                    *worksheet#rcom#InitializeBuffer()*
+worksheet#rcom#InitializeBuffer(worksheet)
 
 
 
