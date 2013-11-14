@@ -3,16 +3,16 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-18.
-" @Last Change: 2010-02-24.
-" @Revision:    0.0.212
+" @Last Change: 2013-11-14.
+" @Revision:    0.0.214
 
 if &cp || exists("loaded_worksheet_rcom_autoload")
     finish
 endif
-if !has('ruby')
-    echoerr 'Worksheet rcom: +ruby required'
-    finish
-endif
+" if !has('ruby')
+"     echoerr 'Worksheet rcom: +ruby required'
+"     finish
+" endif
 let loaded_worksheet_rcom_autoload = 1
 let s:save_cpo = &cpo
 set cpo&vim
@@ -30,7 +30,7 @@ let s:prototype = {'syntax': 'r'}
 
 
 function! s:prototype.Evaluate(lines) dict "{{{3
-    return rcom#Evaluate(join(a:lines, "\n"))
+    return rcom#Evaluate(join(a:lines, "\n"), 'r')
 endf
 
 
