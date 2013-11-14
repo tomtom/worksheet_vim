@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2010-09-05.
-" @Revision:    106
+" @Last Change: 2013-11-14.
+" @Revision:    109
 " GetLatestVimScripts: 0 0 worksheet.vim
 
 if &cp || exists("loaded_worksheet")
@@ -47,26 +47,6 @@ endif
 " Open a new worksheet.
 command! -narg=* -complete=customlist,worksheet#Complete Worksheet call worksheet#UseWorksheet(<f-args>)
 
-" Restore a worksheet to the last know good state.
-command! WorksheetRestore call worksheet#Restore()
-
-" :WorksheetSaveAs[!] [FILENAME]
-" Save a worksheet to disk.
-" By default worksheets are 'buftype'=nofile and 'noswapfile'.
-command! -bang -narg=? -complete=file WorksheetSaveAs call worksheet#SaveAs("<bang>", <q-args>)
-
-" Evaluate all cells in the current worksheet.
-command! WorksheetEvaluateAll call worksheet#EvaluateAll()
-
-" Export the input fields to a file.
-command! -narg=? -complete=file WorksheetExport call worksheet#Export(<q-args>)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
-
-
-finish
-CHANGES:
-0.1
-- Initial release
-

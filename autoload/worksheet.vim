@@ -3,11 +3,9 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
-" @Last Change: 2012-03-14.
-" @Revision:    0.0.794
+" @Last Change: 2013-11-14.
+" @Revision:    0.0.933
 
-let s:save_cpo = &cpo
-set cpo&vim
 " call tlog#Log('Load: '. expand('<sfile>')) " vimtlib-sfile
 
 
@@ -28,6 +26,12 @@ if !exists('g:worksheet#rewrite')
 endif
 
 
+if !exists('g:worksheet#skip_nomodifiable')
+    " If true, the cursor skips over non-modifiable text.
+    let g:worksheet#skip_nomodifiable = 1   "{{{2
+endif
+
+
 let s:modes = {}
 let s:bufworksheets = {}
 let s:processing = 0
@@ -44,12 +48,12 @@ function! worksheet#Worksheet(...) "{{{3
     let current_buffer = a:0 >= 2 ? a:2 : 0
     if !current_buffer
         exec 'split __Worksheet@'. mode .'__'
+        let b:worksheet = worksheet#Prototype()
+        let b:worksheet.bufnr = bufnr('')
+        let b:worksheet.mode = mode
+        let b:worksheet.syntax = mode
+        let s:bufworksheets[bufnr('%')] = b:worksheet
     endif
-    let b:worksheet = worksheet#Prototype()
-    let b:worksheet.bufnr = bufnr('')
-    let b:worksheet.mode = mode
-    let b:worksheet.syntax = mode
-    let s:bufworksheets[bufnr('')] = b:worksheet
     if getline(line('$') - 1) =~ '^\[worksheet metadata\]$'
         let worksheet_dump = getline('$')
         silent $-1,$delete
@@ -120,7 +124,7 @@ endf
 
 
 function! worksheet#RestoreBuffer() "{{{3
-    call worksheet#Worksheet('', 1)
+    call worksheet#Worksheet(exists('b:worksheet') ? b:worksheet.mode : '', 1)
 endf
 
 
@@ -129,6 +133,23 @@ function! worksheet#SetModifiable(mode) "{{{3
         setlocal modifiable
     else
         setlocal nomodifiable
+    endif
+    if g:worksheet#skip_nomodifiable
+        let lnum1 = line('.')
+        if !&l:modifiable
+            let lnum0 = exists('b:worksheet_lnum') ? b:worksheet_lnum : 0 
+            if lnum0 < lnum1
+                let key = ']]'
+            else
+                let key = '[['
+            endif
+            if a:mode == 'i'
+                let key = "\<esc>" . key ."i"
+            endif
+            " TLogVAR a:mode, lnum0, lnum1, key
+            call feedkeys(key, 'm')
+        endif
+        let b:worksheet_lnum = lnum1
     endif
 endf
 
@@ -139,10 +160,10 @@ function! worksheet#Restore() "{{{3
         let pos = getpos('.')
         silent %delete
         let ws = b:worksheet
-        for idx in ws.order
-            let entry = get(ws.entries, idx, {})
+        for entry_idx in ws.order
+            let entry = get(ws.entries, entry_idx, {})
             if empty(entry)
-                echomsg 'Worksheet: Missing entry: '. idx
+                echomsg 'Worksheet: Missing entry: '. entry_idx
             else
                 call append(line('$'), entry.header)
                 if has_key(entry, 'input')
@@ -237,13 +258,13 @@ function! worksheet#EvaluateLinesInWorksheet(filetype, lines) "{{{3
     if !empty(ws)
         call worksheet#UseWorksheet(a:filetype)
         let self = b:worksheet
-        let cid = self.CurrentEntryId()
-        " TLogVAR cid, self.entries[cid]
-        if !empty(get(self.entries[cid], 'string', ''))
-            let cid = self.NewEntry(1, 1)
+        let entry_id = self.CurrentEntryId()
+        " TLogVAR entry_id, self.entries[entry_id]
+        if !empty(get(self.entries[entry_id], 'string', ''))
+            let entry_id = self.NewEntry(1, 1)
         endif
-        if cid >= 0
-            if self.SetInput(cid, a:lines)
+        if entry_id >= 0
+            if self.SetInput(entry_id, a:lines)
                 call self.Submit()
                 norm! zt
             endif
@@ -289,10 +310,10 @@ function! worksheet#EvaluateAll() "{{{3
         let pos = getpos('.')
         try
             let worksheet = b:worksheet
-            for cid in worksheet.order
-                let entry = worksheet.entries[cid]
-                " TLogVAR cid, entry
-                let lno = b:worksheet.GotoEntry(cid, 1, 0)
+            for entry_id in worksheet.order
+                let entry = worksheet.entries[entry_id]
+                " TLogVAR entry_id, entry
+                let lno = b:worksheet.GotoEntry(entry_id, 1, 0)
                 if lno
                     call b:worksheet.Submit()
                 endif
@@ -321,33 +342,33 @@ function! s:RegexpEscape(string) "{{{3
 endf
 
 
-function! s:EncodeID(cid) "{{{3
+function! s:EncodeID(entry_id) "{{{3
     let start = 65
     let base = 26
     let code = []
-    let cid = a:cid - 1
+    let entry_id = a:entry_id - 1
     while 1
-        let rem = cid % base
+        let rem = entry_id % base
         call insert(code, nr2char(start + rem))
-        if cid < base
+        if entry_id < base
             break
         endif
-        let cid = (cid / base) - 1
+        let entry_id = (entry_id / base) - 1
     endwh
     return join(code, '')
 endf
 
 
 function! DecodeID(code) "{{{3
-    let id = 0
+    let entry_id = 0
     let max = len(a:code) - 1
     for idx in range(0, max)
         let a = char2nr(a:code[idx]) - 64
         let b = float2nr(pow(26, max - idx))
         let c = a * b
-        let id += c
+        let entry_id += c
     endfor
-    return id
+    return entry_id
 endf
 
 
@@ -356,8 +377,9 @@ let s:prototype = {
             \ 'entries': {},
             \ 'order': [],
             \ 'buffers': [],
-            \ 'fmt_output': '`  %s',
-            \ 'rx_output': '^`  ',
+            \ 'fmt_output': '`	%s',
+            \ 'fmt_error': '!	%s',
+            \ 'rx_output': '^[`!]	',
             \ 'fmt_entry': '___[@%04d@]_________[%s]___',
             \ 'rx_entry': '^___\[@\(\d\{4,}\)@\]_________\[\([^]]*\)\]___\+$',
             \ }
@@ -387,11 +409,11 @@ function! s:prototype.BufUnload() dict "{{{3
         echom 'Worksheet: Mode '. self.mode .' not found in: '. string(keys(s:modes))
         return
     endif
-    let idx = index(s:modes[self.mode], self.bufnr)
-    if idx < 0
+    let entry_idx = index(s:modes[self.mode], self.bufnr)
+    if entry_idx < 0
         echom 'Worksheet: Buffer '. self.bufnr .' not found in: '. string(s:modes[self.mode])
     else
-        call remove(s:modes[self.mode], idx)
+        call remove(s:modes[self.mode], entry_idx)
     endif
     if empty(s:modes[self.mode])
         unlet s:modes[self.mode]
@@ -403,44 +425,51 @@ endf
 
 
 function! s:prototype.NextEntry(rel_pos, create, wrap) dict "{{{3
-    let cid = self.CurrentEntryId()
-    let oid = self.OtherEntry(cid, a:rel_pos, a:wrap)
-    return self.GotoEntry(oid, a:rel_pos, a:create)
+    let entry_id = self.CurrentEntryId()
+    let other_id = self.OtherEntry(entry_id, a:rel_pos, a:wrap)
+    return self.GotoEntry(other_id, a:rel_pos, a:create)
 endf
 
 
-function! s:prototype.OtherEntry(cid, rel_pos, wrap) dict "{{{3
-    let cidx = index(self.order, a:cid)
-    let oidx = cidx + a:rel_pos
-    " TLogVAR a:cid, cidx, a:rel_pos, oidx, self.order
+function! s:prototype.OtherEntry(entry_id, rel_pos, wrap) dict "{{{3
+    let entry_idx = index(self.order, a:entry_id)
+    let other_idx = entry_idx + a:rel_pos
+    " TLogVAR a:entry_id, entry_idx, a:rel_pos, other_idx, self.order
     if a:wrap
-        let oidx = (oidx + len(self.order)) % len(self.order)
+        let other_idx = (other_idx + len(self.order)) % len(self.order)
     endif
-    " TLogVAR oidx
-    if oidx < 0
-        let oid = 0
-    elseif oidx >= len(self.order)
-        let oid = 0
+    " TLogVAR other_idx
+    if other_idx < 1
+        let other_id = 1
+    elseif other_idx >= len(self.order)
+        let other_id = 0
     else
-        let oid = get(self.order, oidx, 0)
+        let other_id = get(self.order, other_idx, 1)
     endif
-    " TLogVAR a:cid, cidx, a:rel_pos, oid, oidx, self.order
-    return oid
+    " TLogVAR a:entry_id, entry_idx, a:rel_pos, other_id, other_idx, self.order
+    return other_id
 endf
 
 
-function! s:prototype.GotoEntry(entry_id, rel_pos, create) dict "{{{3
-    " TLogVAR a:entry_id, a:create
-    if a:entry_id > 0
-        let entry = get(self.entries, a:entry_id, {})
-        " TLogVAR entry
+function! s:prototype.GotoEntry(entry_id, rel_pos, create, ...) dict "{{{3
+    let geom = a:0 >= 1 ? a:1 : {}
+    " TLogVAR a:entry_id, a:rel_pos, a:create
+    if a:entry_id == -1
+        let entry_id = self.CurrentEntryId()
+        " TLogVAR entry_id
+    else
+        let entry_id = a:entry_id
+    endif
+    if entry_id > 0
+        let entry = get(self.entries, entry_id, {})
         if !empty(entry)
+            " TLogVAR entry.header
             return search(s:RegexpEscape(entry.header), 'cw')
         endif
     elseif a:create
         let dir = a:rel_pos < 0 ? -1 : 1
-        let eid = self.NewEntry(dir, 1)
-        " TLogVAR dir, eid
+        let new_id = self.NewEntry(dir, 1)
+        " TLogVAR dir, new_id
         return self.HeadOfEntry()
     endif
     return 0
@@ -463,15 +492,15 @@ endf
 function! s:prototype.CurrentEntryId() dict "{{{3
     let line = self.HeadOfEntry('n')
     let ml = matchlist(getline(line), self.rx_entry)
-    let id = 0 + substitute(get(ml, 1), '^0*', '', '')
-    " TLogVAR line, ml, id
-    return id
+    let entry_id = 0 + substitute(get(ml, 1), '^0*', '', '')
+    " TLogVAR line, ml, entry_id
+    return entry_id
 endf
 
 
-function! s:prototype.Header(cid) dict "{{{3
+function! s:prototype.Header(entry_id) dict "{{{3
     let tstamp = strftime("%c")
-    let header = printf(self.fmt_entry, a:cid, tstamp)
+    let header = printf(self.fmt_entry, a:entry_id, tstamp)
     " let fill   = min([50, &columns]) - &fdc - len(header)
     " if fill > 0
     "     let header .= repeat('_', fill)
@@ -490,13 +519,13 @@ function! s:prototype.NewEntry(direction, ...) dict "{{{3
         endif
     endif
 
-    let cid = self.CurrentEntryId()
-    " TLogVAR cid
+    let entry_id = self.CurrentEntryId()
+    " TLogVAR entry_id
 
     let entry_top = max(keys(self.entries)) + 1
     let head = self.Header(entry_top)
     let self.entries[entry_top] = {'header': head}
-    let pos = index(self.order, cid)
+    let pos = index(self.order, entry_id)
     if a:direction > 0
         let pos += 1
     endif
@@ -566,8 +595,8 @@ function! s:prototype.EndOfOutput() "{{{3
 endf
 
 
-function! s:ReplaceVariable(cid, worksheet) "{{{3
-    let entry = get(a:worksheet.entries, a:cid, {})
+function! s:ReplaceVariable(entry_id, worksheet) "{{{3
+    let entry = get(a:worksheet.entries, a:entry_id, {})
     " TLogVAR entry
     return get(entry, 'output', '')
 endf
@@ -591,9 +620,9 @@ function! s:prototype.Keyword() dict "{{{3
 endf
 
 
-function! s:prototype.SetInput(eid, lines) dict "{{{3
-    " TLogVAR a:eid, a:lines
-    let eid = a:eid > 0 ? a:eid : self.CurrentEntryId()
+function! s:prototype.SetInput(entry_id, lines) dict "{{{3
+    " TLogVAR a:entry_id, a:lines
+    let entry_id = a:entry_id > 0 ? a:entry_id : self.CurrentEntryId()
     let ebeg = self.HeadOfEntry()
     let ibeg = ebeg + 1
     let iend = self.EndOfInput()
@@ -614,11 +643,11 @@ function! s:prototype.SetInput(eid, lines) dict "{{{3
 endf
 
 
-function! s:prototype.Yank(eid, what) dict "{{{3
-    " TLogVAR a:eid, a:what
-    let eid = a:eid > 0 ? a:eid : self.CurrentEntryId()
-    " TLogVAR eid
-    let entry = get(self.entries, eid, {})
+function! s:prototype.Yank(entry_id, what) dict "{{{3
+    " TLogVAR a:entry_id, a:what
+    let entry_id = a:entry_id > 0 ? a:entry_id : self.CurrentEntryId()
+    " TLogVAR entry_id
+    let entry = get(self.entries, entry_id, {})
     " TLogVAR entry
     if !empty(entry)
         let reg = v:register
@@ -649,10 +678,10 @@ function! s:prototype.YankAll() "{{{3
     let pos = getpos('.')
     let out = []
     try
-        for cid in self.order
-            " TLogVAR cid
+        for entry_id in self.order
+            " TLogVAR entry_id
             call setreg(reg, "")
-            call self.Yank(cid, 'string')
+            call self.Yank(entry_id, 'string')
             let val = getreg(reg)
             " TLogVAR val
             if !empty(val)
@@ -673,14 +702,14 @@ endf
 
 
 function! s:prototype.SwapEntries(rel_pos) dict "{{{3
-    let cid = self.CurrentEntryId()
-    let cp  = index(self.order, cid)
-    let oid = self.OtherEntry(cid, a:rel_pos, 1)
-    let op  = index(self.order, oid)
-    let self.order[cp] = oid
-    let self.order[op] = cid
+    let entry_id = self.CurrentEntryId()
+    let cp  = index(self.order, entry_id)
+    let other_id = self.OtherEntry(entry_id, a:rel_pos, 1)
+    let op  = index(self.order, other_id)
+    let self.order[cp] = other_id
+    let self.order[op] = entry_id
     call worksheet#Restore()
-    exec self.GotoEntry(cid, 0, 0)
+    exec self.GotoEntry(entry_id, 0, 0)
     exec self.EndOfInput()
 endf
 
@@ -695,6 +724,31 @@ function! s:prototype.SilentInput(input) dict "{{{3
 endf
 
 
+function! s:prototype.CurrentItemGeometry() dict "{{{3
+    let geom = {'pos': getpos('.')}
+    try
+        let geom.head_lno = self.HeadOfEntry()
+        let geom.pos_rlnum = line('.') - geom.head_lno
+        exec geom.head_lno
+        let geom.entry_id = self.CurrentEntryId()
+        let geom.in_beg = geom.head_lno + 1
+        let geom.in_end = self.EndOfInput(geom.in_beg)
+        " TLogVAR geom.in_beg, geom.in_end
+        if !s:IsInputField(self, geom.in_beg)
+            throw 'Worksheet: Cannot find input field'
+        endif
+        let input = getline(geom.in_beg, geom.in_end)
+        let [geom.silent, geom.input] = self.SilentInput(input)
+        let geom.prepared_input = copy(geom.input)
+        let geom.prepared_input = filter(geom.prepared_input, 'v:val[0] != "%"')
+        let geom.prepared_input = map(geom.prepared_input, 'self.PrepareInput(v:val)')
+    finally
+        call setpos('.', geom.pos)
+    endtry
+    return geom
+endf
+
+
 " Special syntax:
 " Last character is ";" ... silent
 " Leading character is "%" ... comment
@@ -702,54 +756,13 @@ function! s:prototype.Submit() dict "{{{3
     let pos = getpos('.')
     let s:processing = 1
     try
-        let head_lno = self.HeadOfEntry()
-        exec head_lno
-        let cid    = self.CurrentEntryId()
-        let in_beg = head_lno + 1
-        let in_end = self.EndOfInput(in_beg)
-        " TLogVAR in_beg, in_end
-        if !s:IsInputField(self, in_beg)
-            echoerr 'Worksheet: Cannot find input field'
-        else
-            let input = getline(in_beg, in_end)
-            let [silent, input] = self.SilentInput(input)
-            " TLogVAR silent, input
-            call filter(input, 'v:val[0] != "%"')
-            call map(input, 'self.PrepareInput(v:val)')
-            " TLogVAR silent, input
-            let out_beg = in_end + 1
-            if out_beg <= line('$')
-                let out_end = self.EndOfOutput()
-                " TLogVAR out_beg, out_end
-                if out_end <= 0
-                    let out_end = line('$')
-                endif
-                if out_end >= out_beg
-                    silent exec out_beg .','. out_end .'delete'
-                endif
-            endif
-            let output = self.Evaluate(input)
-            " TLogVAR output
-            if type(output) <= 1
-                let body  = output
-                let lines = split(output, "\n")
-            elseif type(output) == 3
-                let body = join(output, "\n")
-                let lines = output
-            else
-                echoerr 'Worksheet: Unexpected type: '. string(output)
-            endif
-            call map(lines, 'printf(self.fmt_output, v:val)')
-            if !silent && !empty(lines)
-                call append(in_end, lines)
-            endif
-            let header = self.Header(cid)
-            call setline(head_lno, header)
-            let self.entries[cid].header = header
-            let self.entries[cid].input = input
-            let self.entries[cid].string = join(input, "\n")
-            let self.entries[cid].output = body
-            let self.entries[cid].lines = lines
+        let geom = self.CurrentItemGeometry()
+        " TLogVAR geom.silent, geom.input
+        if has_key(self, 'Evaluate')
+            let output = self.Evaluate(geom.prepared_input)
+            call self.SetOutput(geom, output)
+        elseif has_key(self, 'EvaluateAsync')
+            call self.EvaluateAsync(geom, geom.prepared_input)
         endif
     finally
         let s:processing = 0
@@ -758,8 +771,78 @@ function! s:prototype.Submit() dict "{{{3
 endf
 
 
+function! s:prototype.SetOutputAsync(geom, output) dict "{{{3
+    let pos = getpos('.')
+    let geom0 = self.CurrentItemGeometry()
+    try
+        if (geom0.entry_id != a:geom.entry_id)
+            call self.GotoEntry(a:geom.entry_id, 0, 0)
+        endif
+        let geom = self.CurrentItemGeometry()
+        if geom.entry_id != a:geom.entry_id
+            throw "Worksheet: Cannot move to item ". a:geom.entry_id
+        endif
+        call self.SetOutput(geom, a:output)
+    finally
+        call setpos('.', pos)
+        if (geom0.entry_id != a:geom.entry_id)
+            call self.GotoEntry(geom0.entry_id, 0, 0, geom0)
+        endif
+    endtry
+endf
+
+
+function! s:prototype.SetOutput(geom, output) dict "{{{3
+    let out_beg = a:geom.in_end + 1
+    if out_beg <= line('$')
+        let out_end = self.EndOfOutput()
+        " TLogVAR out_beg, out_end
+        if out_end <= 0
+            let out_end = line('$')
+        endif
+        if out_end >= out_beg
+            silent exec out_beg .','. out_end .'delete'
+        endif
+    endif
+    " TLogVAR a:output
+    if type(a:output) == 4
+        let [out_body, out_lines] = s:GetBodyLines(get(a:output, 'out', ''))
+        let [err_body, err_lines] = s:GetBodyLines(get(a:output, 'err', ''))
+    else
+        let [out_body, out_lines] = s:GetBodyLines(a:output)
+        let [err_body, err_lines] = s:GetBodyLines('')
+    endif
+    call map(out_lines, 'printf(self.fmt_output, v:val)')
+    call map(err_lines, 'printf(self.fmt_error, v:val)')
+    call append(a:geom.in_end, err_lines)
+    if !a:geom.silent && !empty(out_lines)
+        call append(a:geom.in_end, out_lines)
+    endif
+    let header = self.Header(a:geom.entry_id)
+    call setline(a:geom.head_lno, header)
+    let self.entries[a:geom.entry_id].header = header
+    let self.entries[a:geom.entry_id].geom = a:geom
+    let self.entries[a:geom.entry_id].input = a:geom.input
+    let self.entries[a:geom.entry_id].string = join(a:geom.input, "\n")
+    let self.entries[a:geom.entry_id].value = a:output
+    let self.entries[a:geom.entry_id].output = out_body
+    let self.entries[a:geom.entry_id].lines = out_lines
+endf
+
+
+function! s:GetBodyLines(output) "{{{3
+    if type(a:output) <= 1
+        let body  = a:output
+        let lines = split(a:output, "\n")
+    elseif type(a:output) == 3
+        let body = join(a:output, "\n")
+        let lines = a:output
+    else
+        throw 'Worksheet: Unexpected type: '. string(a:output)
+    endif
+    return [body, lines]
+endf
+
+
 
 " call TLogDBG(string(s:prototype))
-
-let &cpo = s:save_cpo
-unlet s:save_cpo
