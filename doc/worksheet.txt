@@ -38,13 +38,20 @@ Contents~
         :WorksheetSaveAs ........................... |:WorksheetSaveAs|
         :WorksheetEvaluateAll ...................... |:WorksheetEvaluateAll|
         :WorksheetExport ........................... |:WorksheetExport|
+        <f1> ....................................... |worksheet-map-<f1>|
         u .......................................... |worksheet-map-u|
         <c-n> ...................................... |worksheet-map-<c-n>|
         <c-p> ...................................... |worksheet-map-<c-p>|
         <c-pagedown> ............................... |worksheet-map-<c-pagedown>|
         i_<c-pagedown> ............................. |worksheet-map-i_<c-pagedown>|
+        n_<tab> .................................... |worksheet-map-n_<tab>|
+        n_]] ....................................... |worksheet-map-n_]]|
+        n_} ........................................ |worksheet-map-n_}|
         <c-pageup> ................................. |worksheet-map-<c-pageup>|
         i_<c-pageup> ............................... |worksheet-map-i_<c-pageup>|
+        n_<s-tab> .................................. |worksheet-map-n_<s-tab>|
+        n_[[ ....................................... |worksheet-map-n_[[|
+        n_{ ........................................ |worksheet-map-n_{|
         <m-pagedown> ............................... |worksheet-map-<m-pagedown>|
         i_<m-pagedown> ............................. |worksheet-map-i_<m-pagedown>|
         <m-pageup> ................................. |worksheet-map-<m-pageup>|
@@ -57,6 +64,7 @@ Contents~
         yo ......................................... |worksheet-map-yo|
         yin ........................................ |worksheet-map-yin|
         g:worksheet#default ........................ |g:worksheet#default|
+        g:worksheet#skip_nomodifiable .............. |g:worksheet#skip_nomodifiable|
         worksheet#Worksheet ........................ |worksheet#Worksheet()|
         worksheet#UseWorksheet ..................... |worksheet#UseWorksheet()|
         worksheet#Complete ......................... |worksheet#Complete()|
@@ -74,6 +82,7 @@ Contents~
         prototype.BufUnload
         prototype.NextEntry
         prototype.OtherEntry
+        prototype.GotoEndOfEntry
         prototype.GotoEntry
         prototype.NextInputField
         prototype.CurrentEntryId
@@ -89,7 +98,10 @@ Contents~
         prototype.YankAll
         prototype.SwapEntries
         prototype.SilentInput
+        prototype.CurrentItemGeometry
         prototype.Submit
+        prototype.SetOutputAsync
+        prototype.SetOutput
         worksheet#rubymath#InitializeInterpreter ... |worksheet#rubymath#InitializeInterpreter()|
         worksheet#rubymath#InitializeBuffer ........ |worksheet#rubymath#InitializeBuffer()|
         prototype.Evaluate
@@ -120,7 +132,7 @@ Contents~
 plugin/worksheet.vim~
 
                                                     *g:worksheet_suffix*
-g:worksheet_suffix             (default: '.wks')
+g:worksheet_suffix             (default: '.vwks')
     The suffix for saved worksheets.
     TODO: If non-empty, this will also add a line to the filetypedetect 
     autogroup.
@@ -131,6 +143,10 @@ g:worksheet_map                (default: '<Leader>x')
                                                     *:Worksheet*
 :Worksheet [TYPE]
     Open a new worksheet.
+
+
+========================================================================
+ftplugin/worksheet.vim~
 
                                                     *:WorksheetRestore*
 :WorksheetRestore
@@ -151,11 +167,11 @@ g:worksheet_map                (default: '<Leader>x')
     Export the input fields to a file.
 
 
-========================================================================
-ftplugin/worksheet.vim~
-
-
 Maps:~
+
+                                                    *worksheet-map-<f1>*
+<f1> ... :help worksheet.txt<cr>
+    Help
 
                                                     *worksheet-map-u*
 u ... :setlocal modifiable<cr>u
@@ -176,12 +192,30 @@ u ... :setlocal modifiable<cr>u
                                                     *worksheet-map-i_<c-pagedown>*
 i_<c-pagedown> ... <c-o>:call b:worksheet.NextInputField(1, 0, 1)<cr>
 
+                                                    *worksheet-map-n_<tab>*
+n_<tab> ... :call b:worksheet.NextInputField(1, 0, 1)<cr>
+
+                                                    *worksheet-map-n_]]*
+n_]] ... :call b:worksheet.NextInputField(1, 0, 0)<cr>
+
+                                                    *worksheet-map-n_}*
+n_} ... :call b:worksheet.NextInputField(1, 0, 1)<cr>
+
                                                     *worksheet-map-<c-pageup>*
 <c-pageup> ... :call b:worksheet.NextInputField(-1, 0, 1)<cr>
     Goto previous input field
 
                                                     *worksheet-map-i_<c-pageup>*
 i_<c-pageup> ... <c-o>:call b:worksheet.NextInputField(-1, 0, 1)<cr>
+
+                                                    *worksheet-map-n_<s-tab>*
+n_<s-tab> ... :call b:worksheet.NextInputField(-1, 0, 1)<cr>
+
+                                                    *worksheet-map-n_[[*
+n_[[ ... :call b:worksheet.NextInputField(-1, 0, 0)<cr>
+
+                                                    *worksheet-map-n_{*
+n_{ ... :call b:worksheet.NextInputField(-1, 0, 1)<cr>
 
                                                     *worksheet-map-<m-pagedown>*
 <m-pagedown> ... :call b:worksheet.SwapEntries(1)<cr>
@@ -198,15 +232,15 @@ i_<m-pagedown> ... <c-o>:call b:worksheet.SwapEntries(1)<cr>
 i_<m-pageup> ... <c-o>:call b:worksheet.SwapEntries(-1)<cr>
 
                                                     *worksheet-map-<c-cr>*
-<c-cr> ... :call b:worksheet.Submit()\|call b:worksheet.NextInputField(1, 1, 0)<cr>
+<c-cr> ... :call b:worksheet.Submit(1)<cr>
     Submit the input to the interpreter
 
                                                     *worksheet-map-i_<c-cr>*
-i_<c-cr> ... <c-o>:call b:worksheet.Submit()\|call b:worksheet.NextInputField(1, 1, 0)<cr>
+i_<c-cr> ... <esc>:call b:worksheet.Submit(1)<cr>i
     Submit the input to the interpreter
 
                                                     *worksheet-map-gi*
-gi ... :call b:worksheet.GotoEntry(v:count1, 1, 0)\|:exec b:worksheet.EndOfInput()<cr>
+gi ... :call b:worksheet.GotoEndOfEntry(v:count1, 1, 0)<cr>
     Go to entry |v:count|
 
                                                     *worksheet-map-K*
@@ -231,6 +265,10 @@ autoload/worksheet.vim~
                                                     *g:worksheet#default*
 g:worksheet#default            (default: 'vim')
     The default worksheet type
+
+                                                    *g:worksheet#skip_nomodifiable*
+g:worksheet#skip_nomodifiable  (default: 1)
+    If true, the cursor skips over non-modifiable text.
 
                                                     *worksheet#Worksheet()*
 worksheet#Worksheet(...)
@@ -281,6 +319,8 @@ prototype.NextEntry
 
 prototype.OtherEntry
 
+prototype.GotoEndOfEntry
+
 prototype.GotoEntry
 
 prototype.NextInputField
@@ -311,10 +351,16 @@ prototype.SwapEntries
 
 prototype.SilentInput
 
+prototype.CurrentItemGeometry
+
 prototype.Submit
     Special syntax:
     Last character is ";" ... silent
     Leading character is "%" ... comment
+
+prototype.SetOutputAsync
+
+prototype.SetOutput
 
 
 ========================================================================
@@ -351,6 +397,18 @@ prototype.Evaluate
 
                                                     *worksheet#vimeval#InitializeInterpreter()*
 worksheet#vimeval#InitializeInterpreter(worksheet)
+    vimeval~                                            *worksheet-vimeval*
+    In vimeval worksheet, users can evaluate vim code. Some extra rules 
+    apply:
+
+    g:var = "value"
+        Define a variable
+
+    MyFun(arg) = a:arg * 2
+        Define a small function
+
+    expr
+        Print the result of the expression
 
                                                     *worksheet#vimeval#InitializeBuffer()*
 worksheet#vimeval#InitializeBuffer(worksheet)

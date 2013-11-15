@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
 " @Last Change: 2012-03-25.
-" @Revision:    0.0.101
+" @Revision:    0.0.105
 
 let s:prototype = {'syntax': 'vim'}
 

@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
 " @Last Change: 2013-11-14.
-" @Revision:    0.0.75
+" @Revision:    0.0.80
 
 let s:prototype = {'syntax': 'vimeval'}
 
@@ -28,7 +28,7 @@ function! s:prototype.Evaluate(lines) dict "{{{3
             elseif line =~ '^\s*\(s:\)\?\u\w*(.\{-})\s*='
                 let m = matchlist(line, '^\s*\(\(s:\)\?\u\w*(.\{-})\)\s*=\(.\+\)$')
                 if !empty(m)
-                    call worksheet#vim#Evaluate(['function! '. m[1], m[3], 'endf'])
+                    call worksheet#vim#Evaluate([':function! '. m[1], m[3], 'endf'])
                 endif
             else
                 let val = string(eval(line))
@@ -42,6 +42,18 @@ function! s:prototype.Evaluate(lines) dict "{{{3
 endf
 
 
+" vimeval~                                            *worksheet-vimeval*
+" In vimeval worksheet, users can evaluate vim code. Some extra rules 
+" apply:
+"
+" g:var = "value"
+"     Define a variable
+"
+" MyFun(arg) = a:arg * 2
+"     Define a small function
+" 
+" expr
+"     Print the result of the expression
 function! worksheet#vimeval#InitializeInterpreter(worksheet) "{{{3
     call worksheet#vim#InitializeInterpreter(a:worksheet)
 endf
