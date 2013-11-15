@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
 " @Last Change: 2013-11-14.
-" @Revision:    0.0.933
+" @Revision:    0.0.944
 
 " call tlog#Log('Load: '. expand('<sfile>')) " vimtlib-sfile
 
@@ -46,12 +46,14 @@ augroup END
 function! worksheet#Worksheet(...) "{{{3
     let mode = a:0 >= 1 ? a:1 : g:worksheet#default
     let current_buffer = a:0 >= 2 ? a:2 : 0
+    let extra_args = a:000[2 : -1]
     if !current_buffer
         exec 'split __Worksheet@'. mode .'__'
         let b:worksheet = worksheet#Prototype()
         let b:worksheet.bufnr = bufnr('')
         let b:worksheet.mode = mode
         let b:worksheet.syntax = mode
+        let b:worksheet.extra_args = extra_args
         let s:bufworksheets[bufnr('%')] = b:worksheet
     endif
     if getline(line('$') - 1) =~ '^\[worksheet metadata\]$'
@@ -451,6 +453,13 @@ function! s:prototype.OtherEntry(entry_id, rel_pos, wrap) dict "{{{3
 endf
 
 
+function! s:prototype.GotoEndOfEntry(...) dict "{{{3
+    call call(self.GotoEndOfEntry, a:000, self)
+    call self.EndOfInput()
+endf
+
+
+
 function! s:prototype.GotoEntry(entry_id, rel_pos, create, ...) dict "{{{3
     let geom = a:0 >= 1 ? a:1 : {}
     " TLogVAR a:entry_id, a:rel_pos, a:create
@@ -752,12 +761,13 @@ endf
 " Special syntax:
 " Last character is ";" ... silent
 " Leading character is "%" ... comment
-function! s:prototype.Submit() dict "{{{3
+function! s:prototype.Submit(...) dict "{{{3
+    let next_item = a:0 >= 1 ? a:1 : 0
     let pos = getpos('.')
     let s:processing = 1
     try
         let geom = self.CurrentItemGeometry()
-        " TLogVAR geom.silent, geom.input
+        " TLogVAR 1, geom.silent, geom.input
         if has_key(self, 'Evaluate')
             let output = self.Evaluate(geom.prepared_input)
             call self.SetOutput(geom, output)
@@ -768,6 +778,9 @@ function! s:prototype.Submit() dict "{{{3
         let s:processing = 0
         call setpos('.', pos)
     endtry
+    if next_item != 0
+        call self.NextInputField(next_item, 1, 0)
+    endif
 endf
 
 

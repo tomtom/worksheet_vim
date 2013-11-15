@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-16.
 " @Last Change: 2013-11-14.
-" @Revision:    0.1.74
+" @Revision:    0.1.80
 " GetLatestVimScripts: 0 0 :AutoInstall: worksheet.vim
 
 if exists("b:did_ftplugin")
@@ -71,12 +71,12 @@ noremap <buffer> <silent> <m-pageup> :call b:worksheet.SwapEntries(-1)<cr>
 inoremap <buffer> <silent> <m-pageup> <c-o>:call b:worksheet.SwapEntries(-1)<cr>
 
 " Submit the input to the interpreter
-noremap <buffer> <c-cr> :call b:worksheet.Submit()\|call b:worksheet.NextInputField(1, 1, 0)<cr>
+noremap <buffer> <c-cr> :call b:worksheet.Submit(1)<cr>
 " Submit the input to the interpreter
-inoremap <buffer> <c-cr> <c-o>:call b:worksheet.Submit()\|call b:worksheet.NextInputField(1, 1, 0)<cr>
+inoremap <buffer> <c-cr> <esc>:call b:worksheet.Submit(1)<cr>i
 
 " Go to entry |v:count|
-noremap <buffer> <silent> gi :call b:worksheet.GotoEntry(v:count1, 1, 0)\|:exec b:worksheet.EndOfInput()<cr>
+noremap <buffer> <silent> gi :call b:worksheet.GotoEndOfEntry(v:count1, 1, 0)<cr>
 
 noremap <buffer> <silent> K :call b:worksheet.Keyword()<cr>
 
