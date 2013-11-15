@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2008-07-15.
 " @Last Change: 2013-11-14.
-" @Revision:    0.0.83
+" @Revision:    0.0.85
 
 if version < 600
     syntax clear
@@ -27,8 +27,8 @@ syntax match WorksheetHead /^___\[@\d\{4,}@\]_________\[.\{-}\]___\+$/ contains=
 syntax match WorksheetBody /^`	.*/ contains=WorksheetBodyPrefix
 syntax match WorksheetError /^!	.*/ contains=WorksheetErrorPrefix
 if has('conceal')
-    syntax match WorksheetBodyPrefix /^`	/ contained containedin=WorksheetBody conceal cchar=
-    syntax match WorksheetErrorPrefix /^!	/ contained containedin=WorksheetError conceal cchar=
+    syntax match WorksheetBodyPrefix /^`	/ contained containedin=WorksheetBody conceal cchar= 
+    syntax match WorksheetErrorPrefix /^!	/ contained containedin=WorksheetError conceal cchar= 
 else
     syntax match WorksheetBodyPrefix /^`	/ contained containedin=WorksheetBody
     syntax match WorksheetErrorPrefix /^!	/ contained containedin=WorksheetError
@@ -41,7 +41,8 @@ if version < 508
 else
     command! -nargs=+ HiLink hi def link <args>
 endif
-HiLink WorksheetHead Question
+" HiLink WorksheetHead Question
+HiLink WorksheetHead NonText
 HiLink WorksheetId TagName
 HiLink WorksheetBody Statement
 HiLink WorksheetError ErrorMsg
